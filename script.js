@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
-import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
 
 const appSettings = {
     databaseURL: "https://realtime-database-a2ccd-default-rtdb.firebaseio.com/"
@@ -24,16 +24,20 @@ addEl.addEventListener('click', ()=>{
     }
     clearInput();
 })
-
-
 onValue(shoppingListInDb, function(snapshot){
-    listClear();
-    const items = Object.entries(snapshot.val());
-    for(let i in items){
-        let currentItem = items[i];
-        let currentItemId = currentItem[0];
-        let currentItemValue = currentItem[1];
-        listAppender(currentItem);
+    
+    if(snapshot.exists()){
+        listClear();
+        const items = Object.entries(snapshot.val());
+        for(let i in items){
+            let currentItem = items[i];
+            let currentItemId = currentItem[0];
+            let currentItemValue = currentItem[1];
+            listAppender(currentItem);
+        }
+    }
+    else{
+       listEl.innerHTML = "No Items here... yet!!"
     }
 })
 
@@ -47,6 +51,11 @@ function listAppender(input){
     let inputValue = input[1];
     newEl.textContent = inputValue;
     listEl.append(newEl);
+    
+    newEl.addEventListener('click', ()=>{
+        let exactLocationOfItemInDB = ref(database, `shoppingList/${inputId}`);
+        remove(exactLocationOfItemInDB);
+    })
 }
 
 function clearInput() {
